@@ -2,10 +2,11 @@ import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
+from datetime import datetime, timezone, timedelta
 
 # --- [UI 디자인] 미니멀하고 깔끔한 와이드 레이아웃 설정 ---
 st.set_page_config(
-    page_title="모델 시장 최저가 & 포지셔닝 분석", 
+    page_title="시장 최저가 & 포지셔닝 분석 대시보드", 
     layout="wide", 
     initial_sidebar_state="expanded"
 )
@@ -42,9 +43,8 @@ def get_naver_shopping(query):
         return []
 
 # --- 메인 헤더 ---
-st.title("🔍 모델 시장 최저가 & 포지셔닝 분석 대시보드")
+st.title("🔍 가전 시장 최저가 & 포지셔닝 분석 대시보드")
 
-# [기능 추가 1] 사용자 친화적인 접이식 가이드
 with st.expander("💡 대시보드 100% 활용 가이드 (클릭하여 펼치기)"):
     st.markdown("""
     - **검색:** 분석이 필요한 모델명이나 키워드(예: 에스프레소 머신, 초고속 블렌더)를 입력하세요.
@@ -83,7 +83,6 @@ if search_query:
             df = pd.DataFrame(parsed_data)
             df = df[df["최저가(원)"] > 0]
             
-            # [기능 추가 2] 최저가 기준 오름차순 정렬 (가장 싼 가격이 위로)
             df = df.sort_values(by="최저가(원)", ascending=True).reset_index(drop=True)
             
             if not df.empty:
@@ -110,6 +109,13 @@ if search_query:
                 ].reset_index(drop=True)
                 
                 if not filtered_df.empty:
+                    # [기능 추가] 한국 시간(KST) 기준 검색 일시 생성
+                    kst = timezone(timedelta(hours=9))
+                    current_time = datetime.now(kst).strftime("%Y년 %m월 %d일 %H:%M:%S")
+                    
+                    # 캡션 형태로 깔끔하게 우측 정렬 텍스트처럼 표시
+                    st.caption(f"⏱️ 데이터 갱신 일시: {current_time} (KST)")
+                    
                     avg_price = int(filtered_df["최저가(원)"].mean())
                     min_price = int(filtered_df["최저가(원)"].min())
                     max_price = int(filtered_df["최저가(원)"].max())
@@ -131,7 +137,6 @@ if search_query:
                         csv_data = filtered_df.to_csv(index=False).encode('utf-8-sig')
                         st.download_button("📥 현재 필터링된 결과 엑셀(CSV) 다운로드", data=csv_data, file_name=f"market_analysis_{search_query}.csv", mime="text/csv")
                         
-                        # [기능 추가 3] 표 내부 가격 컬럼을 시각적인 Progress Bar로 변환
                         st.dataframe(
                             filtered_df,
                             column_config={
@@ -153,7 +158,6 @@ if search_query:
                     with tab2:
                         st.subheader("📊 유통 채널별 가격 포지셔닝 분석")
                         
-                        # [기능 추가 4] 산점도 우측에 박스 플롯(marginal_y)을 결합하여 밀집도/가독성 향상
                         fig_scatter = px.scatter(
                             filtered_df,
                             x="쇼핑몰",
@@ -163,7 +167,7 @@ if search_query:
                             title=f"'{search_query}' 유통 채널 및 브랜드별 가격 분포",
                             labels={"최저가(원)": "가격 (원)", "쇼핑몰": "유통 채널"},
                             template="plotly_white",
-                            marginal_y="box" # 우측 박스 플롯 추가
+                            marginal_y="box" 
                         )
                         fig_scatter.update_traces(marker=dict(size=12, opacity=0.75))
                         st.plotly_chart(fig_scatter, use_container_width=True)
@@ -171,7 +175,7 @@ if search_query:
                         fig_hist = px.histogram(
                             filtered_df,
                             x="최저가(원)",
-                            nbins=20, # 구간을 좀 더 잘게 쪼개어 가독성 확보
+                            nbins=20, 
                             title="전체 데이터 가격 구간별 상품 집중도",
                             labels={"최저가(원)": "가격 구간 (원)", "count": "상품 빈도수"},
                             template="plotly_white",
