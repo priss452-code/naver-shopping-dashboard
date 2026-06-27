@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 
 # --- [UI 디자인] 미니멀하고 깔끔한 와이드 레이아웃 설정 ---
 st.set_page_config(
-    page_title="시장 최저가 & 포지셔닝 분석 대시보드", 
+    page_title="🔍 시장 최저가 & 포지셔닝 분석", 
     layout="wide", 
     initial_sidebar_state="expanded"
 )
@@ -43,9 +43,9 @@ def get_naver_shopping(query):
         return []
 
 # --- 메인 헤더 ---
-st.title("🔍 가전 시장 최저가 & 포지셔닝 분석 대시보드")
+st.title("🔍 시장 최저가 & 포지셔닝 분석")
 
-with st.expander("💡 대시보드 100% 활용 가이드 (클릭하여 펼치기)"):
+with st.expander("💡 분석 100% 활용 가이드 (클릭하여 펼치기)"):
     st.markdown("""
     - **검색:** 분석이 필요한 모델명이나 키워드(예: 에스프레소 머신, 초고속 블렌더)를 입력하세요.
     - **자동 정렬:** 검색된 모든 결과는 기본적으로 **'최저가 순'**으로 깔끔하게 정렬되어 표시됩니다.
